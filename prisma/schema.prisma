@@ -22,7 +22,7 @@ model Example {
 
 // Necessary for Next auth
 model Account {
-  id                String  @id @default(cuid())
+  id                String  @id @default(cuid()) 
   userId            String
   type              String
   provider          String
@@ -40,7 +40,7 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(cuid()) 
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -48,7 +48,7 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(cuid()) 
   name          String
   email         String   @unique
   password      String
@@ -59,7 +59,7 @@ model User {
 
 model List {
   authorId    String?
-  id          String @id @default(cuid())
+  id          String @id @default(cuid()) 
   name         String
   User        User? @relation(fields: [authorId], references: [id])
   items       Item[]
@@ -67,13 +67,13 @@ model List {
 
 model Item {
   authorId    String?
-  id          String @id @default(cuid())
+  id          String @id @default(cuid()) 
   name        String 
   List        List? @relation(fields: [authorId], references: [id])
 }
 
 model VerificationToken {
-  identifier String
+  identifier String   @id @default(cuid()) 
   token      String   @unique
   expires    DateTime
 

@@ -1,3 +1,4 @@
+import { contextProps } from "@trpc/react-query/dist/internals/context";
 import { list } from "postcss";
 import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
@@ -18,13 +19,25 @@ export const listRouter = router({
         },
       });
     }),
-  getList: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.list.findFirst({
+  getLists: publicProcedure.query(({ ctx }) => {
+    return ctx.prisma.list.findMany({
       where: {
         authorId: ctx.session?.user?.id,
       },
+      include: {
+        items: true,
+      },
     });
   }),
+  getSingleList: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(({ input }) => {
+      return prisma?.list.findUnique({
+        where: {
+          id: input.id,
+        },
+      });
+    }),
 });
 
 export type ServerRouter = typeof listRouter;

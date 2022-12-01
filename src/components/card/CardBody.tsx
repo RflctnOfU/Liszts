@@ -5,13 +5,14 @@ interface CardBody {
   children?: ReactNode;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   onClick: React.MouseEventHandler<HTMLButtonElement>;
+  value: string;
 }
 
 export default function CardBody({
   children,
   onChange,
   onClick,
-  ...rest
+  value,
 }: CardBody) {
   return (
     <>
@@ -23,6 +24,7 @@ export default function CardBody({
           className="m-2 rounded-md border border-slate-300 pl-2"
           onChange={onChange}
           placeholder="item name here"
+          value={value}
         ></input>
         <DangerButton onClick={onClick}>Add Item</DangerButton>
       </div>

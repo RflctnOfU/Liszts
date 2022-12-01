@@ -15,11 +15,12 @@ import { trpc } from "../utils/trpc";
 import PrimaryButton from "../components/button/PrimaryButton";
 import Button from "../components/button";
 import DangerButton from "../components/button/DangerButton";
+import { list } from "postcss";
 
 const Home: NextPage = () => {
   const { data: sessionData } = useSession();
   const hello = trpc.example.hello.useQuery({ text: "from tRPC" });
-  const user = trpc.userRouter.getUser.useQuery();
+  // const user = trpc.userRouter.getUser.useQuery();
   const lists = trpc.listRouter.getLists.useQuery();
   let userId = sessionData?.user?.id;
   // let { data: name } = lists;
@@ -30,18 +31,20 @@ const Home: NextPage = () => {
   }
   const [userListData, setUserListData] = useState<List>();
   // console.log(userListData);
-  const [currentListId, setCurrentListId] = useState({ id: "" });
-  const list = trpc.listRouter.getSingleList.useQuery(currentListId);
+  // const [currentListId, setCurrentListId] = useState({ id: "" });
+  // const list = trpc.listRouter.getSingleList.useQuery(currentListId);
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
   });
-  const [listName, setListName] = useState({ authorId: "", name: "" });
-  const [itemName, setItemName] = useState({ authorId: "", name: "" });
-  const addNewUser = trpc.userRouter.createUser.useMutation({});
-  const addNewList = trpc.listRouter.createList.useMutation({});
-  const addNewItem = trpc.itemRouter.createItem.useMutation({});
+  const [listName, setListName] = useState({ name: "" });
+  const [itemName, setItemName] = useState({ name: "" });
+  const addNewUser = trpc.userRouter.createUser.useMutation();
+  const addNewList = trpc.listRouter.createList.useMutation();
+  const addNewItem = trpc.itemRouter.createItem.useMutation();
+  const deleteList = trpc.listRouter.deleteList.useMutation();
+  const deleteItem = trpc.itemRouter.deleteItem.useMutation();
 
   // useEffect(() => {
   //   setUserListData({
@@ -49,22 +52,22 @@ const Home: NextPage = () => {
   //     items: [items],
   //   });
   // }, []);
-  console.log(userListData);
+  console.log();
 
   const handleUserInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUserData({ ...userData, [name]: value });
   };
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setListName({ ...listName, name: e.target.value });
+    setListName({ name: e.target.value });
   };
   // const handleItemChange = () => {};
 
   const handleListSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const userId = user.data?.id;
-    addNewList.mutate({ authorId: userId, name: listName.name });
-    setListName({ ...listName, name: "" });
+    // const userId = user.data?.id;
+    addNewList.mutate({ name: listName.name });
+    setListName({ name: "" });
   };
 
   const handleNewUserSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -100,13 +103,17 @@ const Home: NextPage = () => {
         <Signup
           onChange={handleUserInputChange}
           onSubmit={handleNewUserSubmit}
+          value1={userData.name}
+          value2={userData.email}
+          value3={userData.password}
         />
         <ListNameForm
           onChange={handleInputChange}
           onSubmit={handleListSubmit}
+          value={listName.name}
         />
         <form onSubmit={() => {}} className="flex w-1/5 flex-col">
-          <input type="text" placeholder="add item" />
+          <input type="text" placeholder="add item" value={itemName.name} />
           <button
             type="submit"
             className="rounded-lg bg-gray-600 p-2 text-white"
@@ -115,7 +122,11 @@ const Home: NextPage = () => {
           </button>
         </form>
         <div>
-          {sessionData && <h2>Welcome Back {sessionData.user?.name} </h2>}
+          {sessionData && (
+            <h2 className="text-white">
+              Welcome Back {sessionData.user?.name}{" "}
+            </h2>
+          )}
         </div>
         <div className="flex w-1/2 flex-col items-center self-center">
           <PrimaryButton onClick={() => {}}>Click Me</PrimaryButton>
@@ -131,14 +142,24 @@ const Home: NextPage = () => {
               <CardHeader>{list.name}</CardHeader>
               <CardBody
                 onChange={(e) => {
-                  setItemName({ ...itemName, name: e.target.value });
+                  setItemName({ name: e.target.value });
                 }}
                 onClick={() => {
-                  addNewItem.mutate({ authorId: list.id, name: itemName.name });
+                  addNewItem.mutate({
+                    listName: list.name,
+                    name: itemName.name,
+                  });
+                  setItemName({ name: "" });
                 }}
+                value={itemName.name}
               >
                 {list.items.map((item) => (
-                  <CardListItem key={item.id} onClick={() => {}}>
+                  <CardListItem
+                    key={item.id}
+                    onClick={() => {
+                      deleteItem.mutate({ id: item.id });
+                    }}
+                  >
                     {item.name}
                   </CardListItem>
                 ))}

@@ -19,20 +19,20 @@ export const userRouter = router({
         },
       });
     }),
-  getUser: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.user.findFirst({
-      where: {
-        id: ctx.session?.user?.id,
-      },
-      include: {
-        lists: {
-          include: {
-            items: true,
-          },
-        },
-      },
-    });
-  }),
+  //   getUser: publicProcedure.query(({ ctx }) => {
+  //     return ctx.prisma.user.findFirst({
+  //       where: {
+  //         id: ctx.session?.user?.id,
+  //       },
+  //       include: {
+  //         lists: {
+  //           include: {
+  //             items: true,
+  //           },
+  //         },
+  //       },
+  //     });
+  //   }),
 });
 
 export type ServerRouter = typeof userRouter;

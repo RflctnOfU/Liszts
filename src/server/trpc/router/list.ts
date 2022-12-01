@@ -1,40 +1,85 @@
-import { contextProps } from "@trpc/react-query/dist/internals/context";
-import { list } from "postcss";
 import { z } from "zod";
-import { router, publicProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
 
 export const listRouter = router({
-  createList: publicProcedure
+  createList: protectedProcedure
     .input(
       z.object({
-        authorId: z.string().nullish(),
+        // authorId: z.string().nullish(),
         name: z.string(),
       })
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.prisma.list.create({
+    // TODO: figure out this mess why id is returning undefined
+    .mutation(async ({ ctx, input }) => {
+      const { prisma, session } = ctx;
+      const { name } = input;
+
+      const userId = await prisma.user.findFirst({
+        where: {
+          email: session.user.email != null ? session.user.email : undefined,
+        },
+      });
+      if (userId) {
+        console.log(userId);
+      }
+      return prisma.list.create({
         data: {
-          authorId: input.authorId,
-          name: input.name,
+          name,
+          authorId: userId != null ? userId.id : "",
+          // author: {
+          //   connect: {
+          //     id: userId,
+          //   },
+          // },
         },
       });
     }),
-  getLists: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.list.findMany({
+  getLists: publicProcedure.query(async ({ ctx }) => {
+    const { prisma, session } = ctx;
+    const user = await prisma.user.findUnique({
       where: {
-        authorId: ctx.session?.user?.id,
+        email: session?.user?.email != null ? session?.user?.email : "",
+      },
+    });
+
+    return await prisma.list.findMany({
+      where: {
+        authorId: user?.id != null ? user.id : "",
       },
       include: {
         items: true,
       },
     });
   }),
-  getSingleList: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(({ input }) => {
-      return prisma?.list.findUnique({
+  // getSingleList: publicProcedure
+  //   .input(z.object({ id: z.string() }))
+  //   .query(({ input }) => {
+  //     return prisma?.list.findUnique({
+  //       where: {
+  //         id: input.id,
+  //       },
+  //     });
+  //   }),
+  deleteList: protectedProcedure
+    .input(z.object({ name: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { prisma, session } = ctx;
+
+      const user = await prisma.user.findUnique({
         where: {
-          id: input.id,
+          email: session?.user?.email != null ? session.user.email : "",
+        },
+      });
+
+      const list = await prisma.list.findFirst({
+        where: {
+          authorId: user?.id != null ? user.id : undefined,
+          name: input.name,
+        },
+      });
+      return await prisma.list.delete({
+        where: {
+          id: list?.id,
         },
       });
     }),

@@ -58,10 +58,10 @@ model User {
 }
 
 model List {
-  authorId    String?
+  authorId    String
   id          String @id @default(cuid()) 
   name         String
-  User        User? @relation(fields: [authorId], references: [id])
+  author        User @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   items       Item[]
 }
 
@@ -69,7 +69,7 @@ model Item {
   authorId    String?
   id          String @id @default(cuid()) 
   name        String 
-  List        List? @relation(fields: [authorId], references: [id])
+  list        List? @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model VerificationToken {
